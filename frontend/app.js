@@ -15,6 +15,10 @@ const portsLayer = L.tileLayer("https://tiles.openseamap.org/seamark/{z}/{x}/{y}
   attribution: "&copy; OpenSeaMap contributors",
   maxZoom: 18,
 }).addTo(map);
+// Sea/ocean names + undersea features (Esri Ocean reference, transparent, keyless — verified live).
+const seasLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Reference/MapServer/tile/{z}/{y}/{x}", {
+  attribution: "Esri",
+}).addTo(map);
 
 const eezLayer = L.layerGroup().addTo(map);
 const mpaLayer = L.layerGroup().addTo(map);
@@ -43,6 +47,7 @@ document.getElementById("lyr-pfz").onchange = (e) => e.target.checked ? map.addL
 
 document.getElementById("lyr-labels").onchange = (e) => e.target.checked ? map.addLayer(labelsLayer) : map.removeLayer(labelsLayer);
 document.getElementById("lyr-ports").onchange = (e) => e.target.checked ? map.addLayer(portsLayer) : map.removeLayer(portsLayer);
+document.getElementById("lyr-seas").onchange = (e) => e.target.checked ? map.addLayer(seasLayer) : map.removeLayer(seasLayer);
 // Satellite true-colour overlay for the current view (CDSE Sentinel-2, cached server-side).
 let satLayer = null;
 async function loadSat() {
