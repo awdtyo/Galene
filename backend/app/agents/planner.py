@@ -13,7 +13,17 @@ from backend.app.tools import LatLon
 
 _DEFAULT = LatLon(lat=15.0, lon=74.0)
 
+SITES = {
+    "kochi": LatLon(lat=15.0, lon=74.0),
+    "chennai": LatLon(lat=13.0, lon=80.2),
+    "sundarbans": LatLon(lat=21.9, lon=88.9),
+    "mumbai": LatLon(lat=19.0, lon=72.8),
+    "vizag": LatLon(lat=17.7, lon=83.3),
+    "visakhapatnam": LatLon(lat=17.7, lon=83.3),
+}
+
 _KEYWORDS = {
+    "compare": (" vs ", " vs.", "compare", "versus"),
     "zone": ("eez", "mpa", "restricted", "boundary", "protected area", "zone to avoid", "avoid"),
     "pfz": ("pfz", "fish zone", "fishing zone", "chlorophyll", "potential fishing", "productiv", "decline"),
     "route": ("route", "safest way", "navigate", "waypoint", "passage"),
@@ -26,7 +36,7 @@ def classify(query: str) -> str:
     for intent, words in _KEYWORDS.items():
         if any(w in q for w in words):
             return intent
-    out = chat([{"role": "user", "content": f"intent of: {query}. Reply safety/pfz/zone/route."}])
+    out = chat([{"role": "user", "content": f"intent of: {query}. Reply safety/pfz/zone/route/compare."}])
     return out["text"].strip().lower() if out["text"].strip().lower() in _KEYWORDS else "safety"
 
 
@@ -55,7 +65,21 @@ def answer(
     trace.append({"agent": "planner", "tool": "discovery:" + ",".join(plan["datasets"]), "timestamp": now_iso()})
     decision: dict | None = None
 
-    if intent == "pfz":
+    if intent == "compare":
+        named = [n for n in SITES if n in query.lower()]
+        if len(named) < 2:
+            facts = f"To compare, name two sites from: {', '.join(sorted(set(SITES)))}."
+        else:
+            order = {"safe": 0, "caution": 1, "unsafe": 2}
+            ranked = []
+            for n in named[:2]:
+                s = weather.summarize(SITES[n], trace)
+                d = risk.verdict(s, trace)
+                ranked.append((n, d["verdict"], s["max_wind_kmh"], s["max_wave_m"]))
+            parts = [f"{n.title()}: {v}, wind {w} km/h, wave {m} m" for n, v, w, m in ranked]
+            calmer = min(ranked, key=lambda r: (order[r[1]], r[2] or 999, r[3] or 999))[0]
+            facts = "Compare tomorrow morning. " + " | ".join(parts) + f". Calmer choice: {calmer.title()}."
+    elif intent == "pfz":
         res = ocean.analyze(point, "KERALA", trace)
         if not res["pfz_zones"]:
             res, degraded = _replan("pfz", trace, lambda: ocean.analyze(point, "KERALA", trace))

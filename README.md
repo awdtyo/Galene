@@ -1,4 +1,5 @@
 # Galene
+<img src="assets/banner.png" alt="SatQuery AI" width="1000" />
 
 ### Marine EcOsystem Reasoning with Collaborative Agents
 

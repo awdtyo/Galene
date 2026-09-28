@@ -32,10 +32,61 @@ document.getElementById("lyr-eez").onchange = (e) => e.target.checked ? map.addL
 document.getElementById("lyr-mpa").onchange = (e) => e.target.checked ? map.addLayer(mpaLayer) : map.removeLayer(mpaLayer);
 document.getElementById("lyr-pfz").onchange = (e) => e.target.checked ? map.addLayer(pfzLayer) : map.removeLayer(pfzLayer);
 
+// Satellite true-colour overlay for the current view (CDSE Sentinel-2, cached server-side).
+let satLayer = null;
+async function loadSat() {
+  const b = map.getBounds();
+  const q = `minlon=${b.getWest().toFixed(2)}&minlat=${b.getSouth().toFixed(2)}&maxlon=${b.getEast().toFixed(2)}&maxlat=${b.getNorth().toFixed(2)}`;
+  const url = `/geo/sat?${q}`;
+  if (satLayer) map.removeLayer(satLayer);
+  satLayer = L.imageOverlay(url, [[b.getSouth(), b.getWest()], [b.getNorth(), b.getEast()]], { opacity: 0.85 });
+  if (document.getElementById("lyr-sat").checked) satLayer.addTo(map);
+}
+document.getElementById("lyr-sat").onchange = (e) => {
+  if (e.target.checked) { loadSat(); if (satLayer) satLayer.addTo(map); }
+  else if (satLayer) map.removeLayer(satLayer);
+};
+map.on("moveend", () => { if (document.getElementById("lyr-sat").checked) loadSat(); });
+
+// 48h tide / wave / wind chart (canvas, no deps).
+async function loadChart() {
+  const r = await fetch(`/geo/series?lat=${lat}&lon=${lon}`);
+  const s = await r.json();
+  const c = document.getElementById("chart");
+  const ctx = c.getContext("2d");
+  const W = (c.width = c.clientWidth || 600), H = c.height;
+  ctx.clearRect(0, 0, W, H);
+  const series = [
+    { key: "sea_level_m", color: "#0369a1", label: "tide m" },
+    { key: "wave_m", color: "#b45309", label: "wave m" },
+    { key: "wind_kmh", color: "#15803d", label: "wind/10" },
+  ];
+  const vals = series.map((o) => s[o.key].map((v, i) => (v == null ? null : o.key === "wind_kmh" ? v / 10 : v)));
+  const all = vals.flat().filter((v) => v != null);
+  const mn = Math.min(...all), mx = Math.max(...all);
+  const X = (i) => (i / (s.times.length - 1)) * (W - 40) + 30;
+  const Y = (v) => H - 15 - ((v - mn) / Math.max(mx - mn, 1e-6)) * (H - 30);
+  ctx.strokeStyle = "#ccc"; ctx.beginPath(); ctx.moveTo(30, 5); ctx.lineTo(30, H - 15); ctx.lineTo(W - 5, H - 15); ctx.stroke();
+  ctx.fillStyle = "#333"; ctx.font = "10px sans-serif";
+  ctx.fillText(mx.toFixed(1), 2, 12); ctx.fillText(mn.toFixed(1), 2, H - 16);
+  vals.forEach((vv, k) => {
+    ctx.strokeStyle = series[k].color; ctx.lineWidth = 1.5; ctx.beginPath();
+    let pen = false;
+    vv.forEach((v, i) => {
+      if (v == null) { pen = false; return; }
+      pen ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v)); pen = true;
+    });
+    ctx.stroke();
+  });
+  ctx.fillText(series.map((o) => o.label).join("  "), 34, 12);
+}
+loadChart();
+
 map.on("click", (e) => {
   lat = +e.latlng.lat.toFixed(2); lon = +e.latlng.lng.toFixed(2);
   marker.setLatLng([lat, lon]);
   document.getElementById("loc").textContent = `lat ${lat.toFixed(2)}, lon ${lon.toFixed(2)} (click map to move)`;
+  loadChart();
 });
 
 const chat = document.getElementById("chat");

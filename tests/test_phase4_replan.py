@@ -14,6 +14,8 @@ def test_classify_intents():
     assert classify("Which zones to avoid near the MPA?") == "zone"
     assert classify("Safest route for my vessel?") == "route"
     assert classify("Is it safe tomorrow morning?") == "safety"
+    assert classify("Compare Kochi vs Chennai tomorrow?") == "compare"
+    assert classify("Am I in a restricted fishing zone?") == "zone"
 
 
 def test_pfz_zone_route_branches(monkeypatch):
@@ -35,3 +37,13 @@ def test_degraded_flag_present(monkeypatch):
     monkeypatch.setattr(settings, "LLM_PROVIDER", "mock")
     r = client.post("/ask", json={"query": "Is it safe tomorrow morning?"})
     assert "degraded" in r.json()
+
+
+def test_compare_branch(monkeypatch):
+    monkeypatch.setattr(settings, "LLM_PROVIDER", "mock")
+    r = client.post("/ask", json={"query": "Compare Kochi vs Chennai tomorrow?"})
+    assert r.status_code == 200
+    b = r.json()
+    assert "Calmer choice" in b["answer"] and "Kochi" in b["answer"] and "Chennai" in b["answer"]
+    r = client.post("/ask", json={"query": "Compare Kochi tomorrow?"})
+    assert "name two sites" in r.json()["answer"]
