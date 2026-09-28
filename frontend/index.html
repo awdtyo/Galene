@@ -9,8 +9,9 @@
 </head>
 <body>
   <header>
-    <h1>Galene — Marine Intelligence</h1>
-    <div id="alert">No query yet.</div>
+    <span class="logo">🌊</span>
+    <h1>Galene <span class="tag">· Marine Intelligence for fishers, researchers & coastal authorities</span></h1>
+    <div id="alert">⚓ No query yet.</div>
   </header>
   <main>
     <section id="mapwrap">
@@ -27,12 +28,13 @@
     <section id="chatwrap">
       <div id="chat"></div>
       <form id="form">
-        <input id="q" autocomplete="off" placeholder="Is it safe tomorrow morning?" />
-        <button>Ask</button>
+        <input id="q" autocomplete="off" placeholder="Is it safe tomorrow morning? Try: Compare Kochi vs Chennai…" />
+        <button>Ask 🌊</button>
       </form>
-      <details id="tracebox"><summary>Evidence &amp; trace</summary><div id="trace"></div></details>
+      <details id="tracebox"><summary>🔍 Evidence &amp; trace</summary><div id="trace"></div></details>
     </section>
   </main>
+  <footer>Galene · SIH 2026 · EEZ/WDPA boundaries simplified — not for navigation</footer>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="app.js"></script>
 </body>

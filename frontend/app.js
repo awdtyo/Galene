@@ -174,7 +174,8 @@ document.getElementById("form").onsubmit = async (e) => {
   const b = await r.json();
   bubble("bot", b.answer);
   const alert = document.getElementById("alert");
-  alert.textContent = `Verdict: ${b.verdict || "info"}${b.degraded ? " (degraded data)" : ""}`;
+  const icon = { safe: "✅", caution: "⚠️", unsafe: "🚨", info: "ℹ️" }[b.verdict] || "ℹ️";
+  alert.textContent = `${icon} ${b.verdict || "info"}${b.degraded ? " (degraded data)" : ""}`;
   alert.className = b.verdict || "info";
   const t = document.getElementById("trace");
   t.innerHTML = "";
