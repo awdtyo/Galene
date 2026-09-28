@@ -166,10 +166,20 @@ map.on("click", (e) => {
 });
 
 const chat = document.getElementById("chat");
+// Escape HTML, then highlight key data: measures, percentages, coordinates, warnings.
+function highlight(text) {
+  let h = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  h = h.replace(/\b\d+(\.\d+)?\s?%/g, (m) => `<span class="hl pct">${m}</span>`);
+  h = h.replace(/\b\d+(\.\d+)?\s?(km\/h|m\b|°C|\bC\b|mg\/m³|km\b|NM\b)/g, (m) => `<span class="hl num">${m}</span>`);
+  h = h.replace(/\(?\b-?\d{1,2}\.\d+,\s?-?\d{1,3}\.\d+\)?/g, (m) => `<span class="hl coord">${m}</span>`);
+  h = h.replace(/\b(WARNING|AVOID|UNSAFE|outside.{0,20}EEZ|OUTSIDE.{0,20}EEZ)\b/gi, (m) => `<span class="hl danger">${m}</span>`);
+  return h;
+}
 function bubble(who, text) {
   const d = document.createElement("div");
   d.className = "msg " + who;
-  d.textContent = text;
+  if (who === "bot") d.innerHTML = highlight(text);
+  else d.textContent = text;
   chat.appendChild(d);
   chat.scrollTop = chat.scrollHeight;
 }

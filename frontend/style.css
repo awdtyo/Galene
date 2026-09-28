@@ -70,6 +70,11 @@ main {
 .msg.user { align-self: flex-end; background: linear-gradient(120deg, #0369a1, #06b6d4); color: #fff; border-bottom-right-radius: 0.25rem; }
 .msg.bot { align-self: flex-start; background: #16263f; color: var(--ink); border: 1px solid var(--line); border-bottom-left-radius: 0.25rem; }
 .msg.sys { align-self: center; color: var(--muted); font-style: italic; box-shadow: none; }
+.hl { font-weight: 700; padding: 0 0.3em; border-radius: 0.3em; white-space: nowrap; }
+.hl.num { background: rgba(34, 211, 238, 0.18); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.4); }
+.hl.pct { background: rgba(74, 222, 128, 0.15); color: #86efac; border: 1px solid rgba(74, 222, 128, 0.4); }
+.hl.coord { background: rgba(251, 191, 36, 0.12); color: #fcd34d; border: 1px dashed rgba(251, 191, 36, 0.5); }
+.hl.danger { background: rgba(248, 113, 113, 0.18); color: #fca5a5; border: 1px solid rgba(248, 113, 113, 0.5); }
 #form { display: flex; gap: 0.5rem; padding: 0.7rem; background: var(--panel2); border-top: 1px solid var(--line); }
 #form input {
   flex: 1; padding: 0.6rem 0.9rem; border-radius: 2rem; font-size: 0.9rem;
