@@ -1,0 +1,1 @@
+{"fixture": "imd_warning", "note": "Illustrative mock; live IMD API needs key (401 without key, verified 2026-09-28).", "district_id": 573, "warnings": [{"day": "Day_1", "warning": "No warning", "description": "Mock: no severe weather"}]}

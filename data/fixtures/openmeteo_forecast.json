@@ -1,0 +1,1 @@
+{"fixture": "openmeteo_forecast", "latitude": 15.0, "longitude": 74.0, "hourly": {"time": ["2026-09-28T00:00", "2026-09-28T01:00"], "temperature_2m": [27.5, 27.2], "wind_speed_10m": [18.0, 20.5], "weather_code": [2, 3]}, "hourly_units": {"temperature_2m": "C", "wind_speed_10m": "km/h", "weather_code": "wmo code"}}

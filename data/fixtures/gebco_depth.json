@@ -1,0 +1,1 @@
+{"fixture": "gebco_depth", "note": "Illustrative mock; GEBCO 2026 grid is GBs, not fetched at runtime.", "lat": 15.0, "lon": 74.0, "depth_m": 65}

@@ -1,0 +1,1 @@
+{"fixture": "openmeteo_marine", "latitude": 15.0, "longitude": 74.0, "hourly": {"time": ["2026-09-28T00:00", "2026-09-28T01:00"], "sea_surface_temperature": [28.4, 28.3], "sea_level_height_msl": [0.42, 0.45], "wave_height": [1.2, 1.4]}, "hourly_units": {"sea_surface_temperature": "C", "sea_level_height_msl": "m", "wave_height": "m"}}

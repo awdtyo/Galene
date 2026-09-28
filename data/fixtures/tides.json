@@ -1,0 +1,1 @@
+{"fixture": "tides", "note": "Illustrative mock; no open India tide JSON API verified. Live proxy: Open-Meteo sea_level_height_msl.", "lat": 15.0, "lon": 74.0, "high_tide": "2026-09-29T04:30", "low_tide": "2026-09-29T10:45", "height_m": 1.1}

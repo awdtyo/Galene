@@ -1,0 +1,1 @@
+{"fixture": "incois_pfz", "note": "Illustrative mock; INCOIS publishes sector text/WebGIS pages, no open JSON API found.", "sector": "KERALA", "forecast_date": "2026-09-28", "valid_upto": "2026-09-29", "zones": [{"lat": 10.2, "lon": 75.8, "depth_m": 45, "direction": "12 NM NW of Kochi landing centre"}]}

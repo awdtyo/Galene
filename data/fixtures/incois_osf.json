@@ -1,0 +1,1 @@
+{"fixture": "incois_osf", "note": "Illustrative mock; INCOIS OSF pages exist but no open JSON API found. Use Open-Meteo marine live.", "lat": 15.0, "lon": 74.0, "wave_height_m": 1.3, "wind_speed_kmh": 19.0, "sst_c": 28.4}
