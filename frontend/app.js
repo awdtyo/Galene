@@ -3,8 +3,8 @@ let lat = 15.0, lon = 74.0;
 let sid = localStorage.getItem("galene_sid") || (localStorage.setItem("galene_sid", crypto.randomUUID()), localStorage.getItem("galene_sid"));
 
 const map = L.map("map", { zoomControl: true }).setView([lat, lon], 5);
-L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-  attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+  attribution: "Esri, Maxar, Earthstar Geographics",
 }).addTo(map);
 
 const eezLayer = L.layerGroup().addTo(map);
