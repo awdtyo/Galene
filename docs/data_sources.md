@@ -21,13 +21,12 @@ Docs: https://open-meteo.com/en/docs (weather + marine).
 | INCOIS Ocean State Forecast | `.../oceanservices/osfforecast.jsp`, `https://sarat.incois.gov.in/OSF/` exist | No open JSON API found | `incois.fetch_ocean_state` → fixture; live via Open-Meteo |
 | Copernicus Marine | Data Store `https://data.marine.copernicus.eu/` (200); chlorophyll/SST products exist | Free account + credentials/toolbox wiring | `copernicus.fetch_ocean_colour` → fixture; live SST via Open-Meteo |
 | GEBCO 2026 | `https://download.gebco.net/` (200); 15 arc-sec global grid, netCDF/GeoTIFF | GBs — never fetch at runtime | `static_geo.fetch_depth` → illustrative fixture |
-| MarineRegions EEZ v12 | `https://marineregions.org/downloads.php` (200); World EEZ v12 ~122MB | Too large to ship; CC-BY licence | `static_geo.fetch_eez` → simplified bbox fixture (labelled NOT real) |
-| WDPA/Protected Planet MPAs | API v4 `https://api.protectedplanet.net/` (docs verified); token required | Token required; commercial use restricted | `static_geo.fetch_mpas` → illustrative fixture |
+| MarineRegions EEZ v12 | WFS `https://geo.vliz.be/geoserver/MarineRegions/wfs?typeName=eez&cql_filter=mrgid=8480` (200, 1 feature, Indian EEZ, doi:10.14284/632) | Full DB ~122MB; CC-BY attribution required | `static_geo.fetch_eez` → `eez_india.json` (real polygon, simplified tol=0.02deg, 75KB, pulled 2026-09-28) |
+| WDPA/Protected Planet MPAs | Public ArcGIS REST `.../ProtectedPlanet/WDPCA/FeatureServer/1/query?where=prnt_iso3='IND' AND gis_m_area>0` (200, 6 marine features) | Check Protected Planet terms for commercial use | `static_geo.fetch_mpas` → `mpa_india.json` (real 6-site geometries, 35KB, pulled 2026-09-28) |
 | India tides | Survey of India tide tables = RAR/ZIP downloads, no JSON API; INCOIS PAT page has no open JSON | No open JSON API verified | `static_geo.fetch_tides` → fixture + Open-Meteo sea-level proxy |
 
 ## TODO (Phase 1+ / Phase 2)
 - IMD API key acquisition → wire keyed fetch in `imd.py`.
 - INCOIS structured feed/scrape approval → replace PFZ/OSF fixtures.
 - Copernicus account + product IDs → authenticated SST/chlorophyll.
-- Real EEZ/MPA polygons (clipped to India coast) → replace simplified fixtures before any real geofencing.
 - Lightning source: NOT verified — no fetcher built; candidate IMD Damini app / Blitzortung to audit in Phase 2.

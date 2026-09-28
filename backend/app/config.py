@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     DATA_CACHE_DIR: str = "data/cache"
     DATA_FIXTURES_DIR: str = "data/fixtures"
+    # Copernicus Data Space Ecosystem (Sentinel Hub OAuth client credentials).
+    # Empty by default; set in local .env only, never commit.
+    COPERNICUS_CLIENT_ID: str = ""
+    COPERNICUS_CLIENT_SECRET: str = ""
 
     def resolved_llm(self) -> tuple[str, str, str]:
         """Return (provider, model, base_url) with Groq defaults applied."""

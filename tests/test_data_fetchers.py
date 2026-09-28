@@ -57,3 +57,39 @@ def test_cache_roundtrip(tmp_path, monkeypatch):
     monkeypatch.setattr(cache_mod.settings, "DATA_CACHE_DIR", str(tmp_path / "c"))
     cache_mod.write_cache("probe", {"a": 1})
     assert cache_mod.read_cache("probe") == {"a": 1}
+
+
+def test_cdse_token_missing_creds(monkeypatch):
+    monkeypatch.setattr(cache_mod.settings, "COPERNICUS_CLIENT_ID", "")
+    monkeypatch.setattr(cache_mod.settings, "COPERNICUS_CLIENT_SECRET", "")
+    try:
+        copernicus.get_cdse_token(use_cache=False)
+        raise AssertionError("expected RuntimeError")
+    except RuntimeError as e:
+        assert "missing" in str(e)
+
+
+def test_cdse_token_mocked(monkeypatch, tmp_path):
+    monkeypatch.setattr(cache_mod.settings, "DATA_CACHE_DIR", str(tmp_path / "c"))
+    monkeypatch.setattr(cache_mod.settings, "COPERNICUS_CLIENT_ID", "test-id")
+    monkeypatch.setattr(cache_mod.settings, "COPERNICUS_CLIENT_SECRET", "test-secret")
+
+    seen = {}
+
+    class R:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"access_token": "tok123", "token_type": "Bearer", "expires_in": 1800}
+
+    def fake_post(url, **kw):
+        seen["url"] = url
+        assert "identity.dataspace.copernicus.eu" in url
+        assert kw["data"]["grant_type"] == "client_credentials"
+        return R()
+
+    monkeypatch.setattr(httpx, "post", fake_post)
+    out = copernicus.get_cdse_token(use_cache=False)
+    assert out["data"]["token_type"] == "Bearer"
+    assert out["provenance"] == {"source": "cdse/oauth", "mode": "live", "fetched_at": out["provenance"]["fetched_at"]}
