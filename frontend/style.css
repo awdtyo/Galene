@@ -69,6 +69,7 @@ main {
 .msg { padding: 0.6rem 0.85rem; border-radius: 1rem; max-width: 92%; white-space: pre-wrap; font-size: 0.9rem; line-height: 1.5; box-shadow: 0 1px 6px rgba(0, 0, 0, 0.4); }
 .msg.user { align-self: flex-end; background: linear-gradient(120deg, #0369a1, #06b6d4); color: #fff; border-bottom-right-radius: 0.25rem; }
 .msg.bot { align-self: flex-start; background: #16263f; color: var(--ink); border: 1px solid var(--line); border-bottom-left-radius: 0.25rem; }
+.msg.bot strong { color: #a5f3fc; font-weight: 800; }
 .msg.sys { align-self: center; color: var(--muted); font-style: italic; box-shadow: none; }
 .hl { font-weight: 700; padding: 0 0.3em; border-radius: 0.3em; white-space: nowrap; }
 .hl.num { background: rgba(34, 211, 238, 0.18); color: #67e8f9; border: 1px solid rgba(34, 211, 238, 0.4); }
