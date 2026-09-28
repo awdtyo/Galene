@@ -14,8 +14,8 @@ from backend.app.tools import LatLon
 _DEFAULT = LatLon(lat=15.0, lon=74.0)
 
 _KEYWORDS = {
-    "pfz": ("pfz", "fish zone", "fishing zone", "chlorophyll", "potential fishing", "productiv", "decline"),
     "zone": ("eez", "mpa", "restricted", "boundary", "protected area", "zone to avoid", "avoid"),
+    "pfz": ("pfz", "fish zone", "fishing zone", "chlorophyll", "potential fishing", "productiv", "decline"),
     "route": ("route", "safest way", "navigate", "waypoint", "passage"),
     "safety": ("safe", "safety", "weather", "sea condition", "tide", "cyclone", "alert", "lightning", "tomorrow", "morning"),
 }
@@ -66,8 +66,18 @@ def answer(
         )
     elif intent == "zone":
         res = geo.assess(point, None, trace)
-        warn = f"WARNING inside {res['mpa_name']} — avoid." if res["inside_mpa"] else "Clear of protected areas."
-        facts = f"Inside EEZ: {res['inside_eez']}. {warn}"
+        snap = weather.summarize(point, trace)
+        sst = ocean.analyze(point, "KERALA", trace)["sst_c"]
+        if res["inside_mpa"]:
+            warn = f"WARNING: inside {res['mpa_name']} — AVOID entry."
+        else:
+            near = res["nearest_mpa"]
+            warn = f"Clear of protected areas. Nearest MPA: {near['name']} ~{near['distance_km']} km away."
+        eez = "Inside Indian EEZ." if res["inside_eez"] else "OUTSIDE Indian EEZ — check jurisdiction."
+        facts = (
+            f"{eez} {warn} Live snapshot {snap['window']}: "
+            f"max wind {snap['max_wind_kmh']} km/h, max wave {snap['max_wave_m']} m, SST {sst} C."
+        )
     elif intent == "route":
         if dest_lat is None or dest_lon is None:
             facts = "To plan a route I need a destination: send dest_lat and dest_lon."

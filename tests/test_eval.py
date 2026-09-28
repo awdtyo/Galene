@@ -1,11 +1,14 @@
 """Phase 6 English-only eval set (product-goal queries). Shape assertions, mock LLM."""
 
+import re
+
 from fastapi.testclient import TestClient
 
 from backend.app.config import settings
 from backend.app.main import app
 
 client = TestClient(app)
+NUMBER_WITH_UNIT = re.compile(r"\d+(\.\d+)?\s?(km/h|m\b|C\b|mg/m3|km\b)")
 
 QUERIES = [
     ("Where is the nearest Potential Fishing Zone today?", {"lat": 15.0, "lon": 74.0}),
@@ -35,3 +38,24 @@ def test_eval_safety_carries_geofence(monkeypatch):
     monkeypatch.setattr(settings, "LLM_PROVIDER", "mock")
     r = client.post("/ask", json={"query": "Is it safe to go to sea tomorrow morning?", "lat": 15.0, "lon": 74.0})
     assert "Geofence" in r.json()["answer"]
+
+
+def test_eval_answers_have_numbers_and_terms(monkeypatch):
+    monkeypatch.setattr(settings, "LLM_PROVIDER", "mock")
+    for q, loc in QUERIES:
+        b = client.post("/ask", json={"query": q, **loc}).json()
+        assert NUMBER_WITH_UNIT.search(b["answer"]), q
+        assert "Protected Fishing Zone" not in b["answer"], q
+
+
+def test_eval_zone_reports_nearest_mpa(monkeypatch):
+    monkeypatch.setattr(settings, "LLM_PROVIDER", "mock")
+    b = client.post("/ask", json={"query": "Which zones to avoid?", "lat": 15.0, "lon": 74.0}).json()
+    assert "Nearest MPA" in b["answer"] and "km away" in b["answer"]
+
+
+def test_terminology_corpus_retrieved():
+    from backend.app.rag.store import retrieve
+
+    titles = [h["title"] for h in retrieve("What does PFZ stand for?")]
+    assert "terminology" in titles  # grounds exact acronym expansions

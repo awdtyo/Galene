@@ -9,19 +9,33 @@ from backend.app.rag.store import retrieve
 
 
 def format_response(query: str, facts: str, trace: list, history: list | None = None) -> tuple[str, list[str]]:
-    """Return (answer, citation_titles). Single exit point for user-facing text."""
+    """Return (answer, citation_titles). Single exit point for user-facing text.
+
+    Fixed template: Verdict -> Numbers -> Geofence -> What-to-do -> Sources.
+    """
     cites = retrieve(query)
     ctx = " ".join(c["snippet"][:200] for c in cites)
     hist = ""
     if history:
         hist = " Conversation so far: " + " | ".join(f"{t['role']}: {t['text'][:120]}" for t in history[-4:])
-    out = chat([{"role": "user", "content": f"Phrase as a short fisher advisory. Facts: {facts}.{hist} Guidance: {ctx}"}])
+    out = chat(
+        [
+            {
+                "role": "user",
+                "content": (
+                    "Write the advisory with these sections: Verdict, Key numbers, "
+                    f"Geofence, What-to-do. Facts: {facts}.{hist} Guidance: {ctx}"
+                ),
+            }
+        ]
+    )
     trace.append({"agent": "viz", "tool": f"llm:{out['provider']}", "timestamp": now_iso()})
     titles = [c["title"] for c in cites]
+    suffix = f" Sources: {', '.join(titles)}." if titles else ""
     if out["provider"].startswith("mock"):
-        suffix = f" Sources: {', '.join(titles)}." if titles else ""
         return f"{facts}.{suffix}", titles
-    return out["text"], titles
+    text = out["text"] if "Sources:" in out["text"] else f"{out['text']}\n\nSources: {', '.join(titles)}."
+    return text, titles
 
 
 def safety_facts(summary: dict, decision: dict) -> str:

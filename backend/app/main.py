@@ -51,3 +51,9 @@ def ask(body: AskRequest):
     from backend.app.agents import planner
 
     return planner.answer(body.query, body.lat, body.lon, body.session_id, body.dest_lat, body.dest_lon)
+
+
+# Serve the dependency-free Leaflet UI from the same origin (added for demo run).
+from fastapi.staticfiles import StaticFiles  # noqa: E402
+
+app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
