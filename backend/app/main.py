@@ -10,12 +10,15 @@ from backend.app.api.schemas import AskRequest
 from backend.app.config import settings
 from backend.app.logging_conf import setup_logging
 
+from backend.app.api.geo import router as geo_router
+
 request_id_ctx: ContextVar[str] = ContextVar("request_id", default="-")
 
 setup_logging(settings.LOG_LEVEL)
 logger = logging.getLogger("orca")
 
 app = FastAPI(title="ORCA", version="0.1.0")
+app.include_router(geo_router)
 
 
 class _RequestIdFilter(logging.Filter):

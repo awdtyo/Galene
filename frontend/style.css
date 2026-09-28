@@ -1,2 +1,20 @@
-#map { height: 400px; }
-body { font-family: sans-serif; margin: 1rem; }
+body { font-family: sans-serif; margin: 0; }
+header { display: flex; align-items: center; gap: 1rem; padding: 0.5rem 1rem; background: #0c4a6e; color: #fff; }
+header h1 { font-size: 1.1rem; margin: 0; }
+#alert { margin-left: auto; padding: 0.3rem 0.8rem; border-radius: 1rem; background: #64748b; font-size: 0.85rem; }
+#alert.safe { background: #15803d; }
+#alert.caution { background: #b45309; }
+#alert.unsafe { background: #b91c1c; }
+main { display: grid; grid-template-columns: 1.2fr 1fr; gap: 0.5rem; padding: 0.5rem; height: calc(100vh - 60px); }
+#map { height: 100%; min-height: 300px; }
+#mapwrap { display: flex; flex-direction: column; }
+#layers { padding: 0.3rem; font-size: 0.85rem; display: flex; gap: 1rem; align-items: center; }
+#chatwrap { display: flex; flex-direction: column; border-left: 1px solid #ddd; }
+#chat { flex: 1; overflow-y: auto; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.4rem; }
+.msg { padding: 0.5rem 0.7rem; border-radius: 0.6rem; max-width: 90%; white-space: pre-wrap; }
+.msg.user { align-self: flex-end; background: #e0f2fe; }
+.msg.bot { align-self: flex-start; background: #f1f5f9; }
+.msg.sys { align-self: center; color: #888; }
+#form { display: flex; gap: 0.4rem; padding: 0.5rem; }
+#form input { flex: 1; padding: 0.5rem; }
+#tracebox { padding: 0.5rem; font-size: 0.8rem; max-height: 30%; overflow-y: auto; }
