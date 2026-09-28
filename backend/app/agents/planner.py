@@ -14,8 +14,8 @@ from backend.app.tools import LatLon
 _DEFAULT = LatLon(lat=15.0, lon=74.0)
 
 _KEYWORDS = {
-    "pfz": ("pfz", "fish zone", "fishing zone", "chlorophyll", "potential fishing"),
-    "zone": ("eez", "mpa", "restricted", "boundary", "protected area", "zone to avoid"),
+    "pfz": ("pfz", "fish zone", "fishing zone", "chlorophyll", "potential fishing", "productiv", "decline"),
+    "zone": ("eez", "mpa", "restricted", "boundary", "protected area", "zone to avoid", "avoid"),
     "route": ("route", "safest way", "navigate", "waypoint", "passage"),
     "safety": ("safe", "safety", "weather", "sea condition", "tide", "cyclone", "alert", "lightning", "tomorrow", "morning"),
 }
@@ -75,16 +75,25 @@ def answer(
         else:
             res = geo.assess(point, LatLon(lat=dest_lat, lon=dest_lon), trace)
             r = res["route"]
+            dep = weather.summarize(point, trace)
+            dep_verdict = risk.verdict(dep, trace)["verdict"]
             facts = (
                 f"Route {r['distance_km']} km, {len(r['waypoints'])} waypoint(s)"
-                f"{' with MPA detour' if r['detoured'] else ', direct'}."
+                f"{' with MPA detour' if r['detoured'] else ', direct'}. "
+                f"Departure window verdict: {dep_verdict}."
             )
     else:
         summary = weather.summarize(point, trace)
         if not summary.get("window"):
             summary, degraded = _replan("weather", trace, lambda: weather.summarize(point, trace))
         decision = risk.verdict(summary, trace)
-        facts = report.safety_facts(summary, decision)
+        fence = geo.assess(point, None, trace)
+        geo_note = (
+            f" Geofence: inside {fence['mpa_name']} — AVOID entry." if fence["inside_mpa"]
+            else (" Geofence: inside Indian EEZ, clear of protected areas." if fence["inside_eez"]
+                  else " Geofence: OUTSIDE Indian EEZ — check jurisdiction.")
+        )
+        facts = report.safety_facts(summary, decision) + geo_note
 
     text, citations = report.format_response(query, facts, trace, history)
     if session_id:
