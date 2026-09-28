@@ -6,6 +6,15 @@ const map = L.map("map", { zoomControl: true }).setView([lat, lon], 5);
 L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
   attribution: "Esri, Maxar, Earthstar Geographics",
 }).addTo(map);
+// City/boundary labels (Esri reference, transparent, keyless — verified live).
+const labelsLayer = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}", {
+  attribution: "Esri",
+}).addTo(map);
+// Ports, buoys, lights (OpenSeaMap seamarks, keyless — verified live).
+const portsLayer = L.tileLayer("https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png", {
+  attribution: "&copy; OpenSeaMap contributors",
+  maxZoom: 18,
+}).addTo(map);
 
 const eezLayer = L.layerGroup().addTo(map);
 const mpaLayer = L.layerGroup().addTo(map);
@@ -32,6 +41,8 @@ document.getElementById("lyr-eez").onchange = (e) => e.target.checked ? map.addL
 document.getElementById("lyr-mpa").onchange = (e) => e.target.checked ? map.addLayer(mpaLayer) : map.removeLayer(mpaLayer);
 document.getElementById("lyr-pfz").onchange = (e) => e.target.checked ? map.addLayer(pfzLayer) : map.removeLayer(pfzLayer);
 
+document.getElementById("lyr-labels").onchange = (e) => e.target.checked ? map.addLayer(labelsLayer) : map.removeLayer(labelsLayer);
+document.getElementById("lyr-ports").onchange = (e) => e.target.checked ? map.addLayer(portsLayer) : map.removeLayer(portsLayer);
 // Satellite true-colour overlay for the current view (CDSE Sentinel-2, cached server-side).
 let satLayer = null;
 async function loadSat() {
