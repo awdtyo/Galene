@@ -1,11 +1,10 @@
-"""ORCA FastAPI entry. Phase 0: /health live, /ask stub only."""
+"""ORCA FastAPI entry. Phase 3: /health + /ask (planner pipeline)."""
 
 import logging
 import uuid
 from contextvars import ContextVar
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
 
 from backend.app.api.schemas import AskRequest
 from backend.app.config import settings
@@ -45,9 +44,7 @@ def health():
 
 
 @app.post("/ask")
-def ask(_body: AskRequest):
-    # Full planner + agents land in Phase 3. Stub keeps contract visible.
-    return JSONResponse(
-        status_code=501,
-        content={"detail": "Not implemented in Phase 0. See Phase 3."},
-    )
+def ask(body: AskRequest):
+    from backend.app.agents import planner
+
+    return planner.answer(body.query, body.lat, body.lon, body.session_id, body.dest_lat, body.dest_lon)

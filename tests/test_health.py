@@ -10,8 +10,3 @@ def test_health():
     assert r.status_code == 200
     assert r.content is not None
     assert r.json()["status"] == "ok"
-
-
-def test_ask_stub_returns_501():
-    r = client.post("/ask", json={"query": "Is it safe tomorrow morning?"})
-    assert r.status_code == 501
