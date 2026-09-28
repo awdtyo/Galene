@@ -87,6 +87,35 @@ flowchart TD
 
 ---
 
+## Features
+
+**Ask anything about the sea**
+- Safety verdicts (`safe/caution/unsafe`) with reasons for any location and morning window
+- PFZ outlook with SST, chlorophyll, and favourability assessment
+- Tide, weather, and sea-condition briefings; cyclone and hazard alerts
+- Geofence checks — EEZ status, MPA warnings, nearest protected area with distance
+- Route planning with MPA detours plus a departure-window verdict
+- Side-by-side site comparison (“Compare Kochi vs Chennai tomorrow?”)
+- Multi-turn memory — follow-ups remember the conversation
+- Every answer carries its reasoning trace, data citations, and sources
+
+**See it on the map**
+- Satellite ocean basemap with city, boundary, port, and sea-name overlays
+- Real EEZ and marine-protected-area polygons; PFZ zone markers with depth popups
+- Live IMD alert polygons colored by severity
+- Sea-surface-temperature productivity grid and Sentinel chlorophyll overlay
+- 48-hour tide/wave/wind chart with hover details; click anywhere to relocate
+- Sentinel-2 true-colour overlay for the current view
+
+**Built for trust and demo**
+- Deterministic, auditable risk rules — the LLM phrases, never decides
+- RAG-grounded wording with a terminology guardrail; structured Verdict → Numbers → Geofence → Actions → Sources answers
+- Key measures, percentages, coordinates, and warnings highlighted inline
+- Proactive watchlist alerts CLI covering key fishing centres
+- Dark marine theme; English-only evaluation set of product queries; one-command Docker and Render deploys
+
+---
+
 ## Product Constraints
 
 | Constraint | Description | Why It Matters |

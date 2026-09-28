@@ -64,6 +64,71 @@ document.getElementById("lyr-sat").onchange = (e) => {
 };
 map.on("moveend", () => { if (document.getElementById("lyr-sat").checked) loadSat(); });
 
+// IMD CAP alert polygons (live RSS; red=Severe, orange=Moderate, yellow=other).
+const alertsLayer = L.layerGroup().addTo(map);
+async function loadAlerts() {
+  try {
+    const r = await fetch("/geo/cyclones");
+    const b = await r.json();
+    alertsLayer.clearLayers();
+    const color = (s) => ({ Severe: "#ef4444", Extreme: "#ef4444", Moderate: "#f59e0b" }[s] || "#facc15");
+    L.geoJSON(b.geojson, {
+      style: (f) => ({ color: color(f.properties.severity), weight: 1.5, fillOpacity: 0.2 }),
+      onEachFeature: (f, l) => l.bindPopup(`<b>${f.properties.headline || f.properties.event}</b><br>${f.properties.area || ""}<br>Severity: ${f.properties.severity || "?"}<br>Expires: ${f.properties.expires || "?"}`),
+    }).addTo(alertsLayer);
+  } catch { /* offline: layer stays empty */ }
+}
+loadAlerts();
+document.getElementById("lyr-alerts").onchange = (e) => e.target.checked ? map.addLayer(alertsLayer) : map.removeLayer(alertsLayer);
+
+// SST productivity grid (Open-Meteo multi-location; blue→red).
+const sstLayer = L.layerGroup().addTo(map);
+function sstColor(v) {
+  if (v == null) return "#64748b";
+  if (v < 27) return "#38bdf8";
+  if (v < 28.5) return "#4ade80";
+  if (v < 29.5) return "#facc15";
+  return "#ef4444";
+}
+async function loadSST() {
+  const b = map.getBounds();
+  const q = `minlon=${b.getWest().toFixed(2)}&minlat=${b.getSouth().toFixed(2)}&maxlon=${b.getEast().toFixed(2)}&maxlat=${b.getNorth().toFixed(2)}&n=5`;
+  try {
+    const r = await fetch(`/geo/sst-grid?${q}`);
+    const d = await r.json();
+    sstLayer.clearLayers();
+    const cells = d.data ? d.data.cells : d.cells;
+    const dLat = (b.getNorth() - b.getSouth()) / 5 / 2, dLon = (b.getEast() - b.getWest()) / 5 / 2;
+    (cells || []).forEach((c) => {
+      if (c.sst == null) return;
+      L.rectangle([[c.lat - dLat, c.lon - dLon], [c.lat + dLat, c.lon + dLon]], {
+        color: sstColor(c.sst), weight: 0.5, fillOpacity: 0.35,
+      }).bindPopup(`SST: ${c.sst.toFixed(1)} °C`).addTo(sstLayer);
+    });
+  } catch { /* offline */ }
+}
+loadSST();
+document.getElementById("lyr-sst").onchange = (e) => e.target.checked ? map.addLayer(sstLayer) : map.removeLayer(sstLayer);
+
+// Chlorophyll-proxy overlay (Sentinel-3 OLCI red-green ratio, relative scale).
+let chlLayer = null;
+async function loadChl() {
+  const b = map.getBounds();
+  const q = `minlon=${b.getWest().toFixed(2)}&minlat=${b.getSouth().toFixed(2)}&maxlon=${b.getEast().toFixed(2)}&maxlat=${b.getNorth().toFixed(2)}`;
+  const url = `/geo/chl?${q}`;
+  if (chlLayer) map.removeLayer(chlLayer);
+  chlLayer = L.imageOverlay(url, [[b.getSouth(), b.getWest()], [b.getNorth(), b.getEast()]], { opacity: 0.55 });
+  if (document.getElementById("lyr-chl").checked) chlLayer.addTo(map);
+}
+document.getElementById("lyr-chl").onchange = (e) => {
+  if (e.target.checked) { loadChl(); if (chlLayer) chlLayer.addTo(map); }
+  else if (chlLayer) map.removeLayer(chlLayer);
+};
+map.on("moveend", () => {
+  if (document.getElementById("lyr-sst").checked) loadSST();
+  if (document.getElementById("lyr-chl").checked) loadChl();
+});
+
 // 48h tide / wave / wind chart (canvas, no deps). Labels + hover details.
 let chartData = null;
 const SERIES = [

@@ -16,7 +16,8 @@ Docs: https://open-meteo.com/en/docs (weather + marine).
 
 | Source | What was verified | Blocker | ORCA fallback |
 |---|---|---|---|
-| IMD warnings | API ref `https://api.imd.gov.in/public/api_reference.html` (200); `.../api/v1/districtwarning?id=573` → **401 `{"error":"API key missing"}`** | API key + IP whitelisting | `imd.fetch_imd_warning` → fixture |
+| IMD warnings | API ref `https://api.imd.gov.in/public/api_reference.html` (200); `.../api/v1/districtwarning?id=573` → **401 `{"error":"API key missing"}`** | Keyed API needs key + whitelisting | `imd.fetch_imd_warning` → fixture |
+| IMD CAP alerts (RSS) | `https://cap-sources.s3.amazonaws.com/in-imd-en/rss.xml` (200, live items with polygon/expires) | Open, no key; best-track lines/cones NOT published (RSMC PNG/PDF only) | `cyclones.fetch_alerts` → LIVE GeoJSON polygons |
 | INCOIS PFZ | Sector text `.../MarineFisheries/TextDataHome?mfid=1` + `.../PfzAdvisory` pages exist (HTML, daily per-sector, 586 landing centres) | No open JSON API found | `incois.fetch_pfz` → fixture |
 | INCOIS Ocean State Forecast | `.../oceanservices/osfforecast.jsp`, `https://sarat.incois.gov.in/OSF/` exist | No open JSON API found | `incois.fetch_ocean_state` → fixture; live via Open-Meteo |
 | Copernicus Marine | Data Store `https://data.marine.copernicus.eu/` (200); chlorophyll/SST products exist | Free account + credentials/toolbox wiring | `copernicus.fetch_ocean_colour` → fixture; live SST via Open-Meteo |
