@@ -2,9 +2,9 @@
 let lat = 15.0, lon = 74.0;
 let sid = localStorage.getItem("galene_sid") || (localStorage.setItem("galene_sid", crypto.randomUUID()), localStorage.getItem("galene_sid"));
 
-const map = L.map("map").setView([lat, lon], 5);
-L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "&copy; OpenStreetMap contributors",
+const map = L.map("map", { zoomControl: true }).setView([lat, lon], 5);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+  attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
 }).addTo(map);
 
 const eezLayer = L.layerGroup().addTo(map);
@@ -17,8 +17,8 @@ async function loadGeo(path, layer, style) {
   const gj = await r.json();
   L.geoJSON(gj, { style }).addTo(layer);
 }
-loadGeo("/geo/eez", eezLayer, { color: "#0369a1", weight: 1.5, fillOpacity: 0.05 });
-loadGeo("/geo/mpas", mpaLayer, { color: "#b45309", weight: 1.5, fillOpacity: 0.25 });
+loadGeo("/geo/eez", eezLayer, { color: "#38bdf8", weight: 1.5, fillOpacity: 0.08 });
+loadGeo("/geo/mpas", mpaLayer, { color: "#fbbf24", weight: 1.5, fillOpacity: 0.25 });
 async function loadPfz() {
   const r = await fetch("/geo/pfz");
   const b = await r.json();
@@ -51,9 +51,9 @@ map.on("moveend", () => { if (document.getElementById("lyr-sat").checked) loadSa
 // 48h tide / wave / wind chart (canvas, no deps). Labels + hover details.
 let chartData = null;
 const SERIES = [
-  { key: "sea_level_m", color: "#0369a1", label: "Tide (m)" },
-  { key: "wave_m", color: "#b45309", label: "Wave (m)" },
-  { key: "wind_kmh", color: "#15803d", label: "Wind (km/h ÷10)", scale: 0.1 },
+  { key: "sea_level_m", color: "#38bdf8", label: "Tide (m)" },
+  { key: "wave_m", color: "#fbbf24", label: "Wave (m)" },
+  { key: "wind_kmh", color: "#4ade80", label: "Wind (km/h ÷10)", scale: 0.1 },
 ];
 function drawChart(hover = -1) {
   const s = chartData;
@@ -72,7 +72,7 @@ function drawChart(hover = -1) {
   // axes
   ctx.strokeStyle = "#94a3b8"; ctx.lineWidth = 1; ctx.beginPath();
   ctx.moveTo(L, 18); ctx.lineTo(L, H - B); ctx.lineTo(W - 8, H - B); ctx.stroke();
-  ctx.fillStyle = "#475569";
+  ctx.fillStyle = "#94a3b8";
   ctx.fillText(mx.toFixed(1), 2, 24); ctx.fillText(mn.toFixed(1), 2, H - B);
   ctx.fillText("m (wind ÷10)", 2, H - 8);
   // x time labels every 12h: "28 00h"
@@ -81,7 +81,7 @@ function drawChart(hover = -1) {
     const hh = +t.slice(11, 13);
     if (hh % 12 === 0) {
       ctx.fillText(`${t.slice(8, 10)} ${t.slice(11, 13)}h`, X(i), H - 10);
-      ctx.strokeStyle = "#e2e8f0"; ctx.beginPath(); ctx.moveTo(X(i), 18); ctx.lineTo(X(i), H - B); ctx.stroke();
+      ctx.strokeStyle = "#1e3a5f"; ctx.beginPath(); ctx.moveTo(X(i), 18); ctx.lineTo(X(i), H - B); ctx.stroke();
     }
   });
   ctx.textAlign = "left";
@@ -90,7 +90,7 @@ function drawChart(hover = -1) {
     const x0 = L + 8 + k * 110;
     ctx.strokeStyle = o.color; ctx.lineWidth = 2.5; ctx.beginPath();
     ctx.moveTo(x0, 12); ctx.lineTo(x0 + 22, 12); ctx.stroke();
-    ctx.fillStyle = "#334155"; ctx.fillText(o.label, x0 + 26, 15);
+    ctx.fillStyle = "#e2e8f0"; ctx.fillText(o.label, x0 + 26, 15);
   });
   // series lines
   vals.forEach((vv, k) => {
