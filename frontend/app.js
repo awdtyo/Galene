@@ -1,6 +1,6 @@
-// ORCA Phase 5 UI: chat -> POST /ask, EEZ/MPA overlays, alert + trace viewer.
+// Galene UI: chat -> POST /ask, EEZ/MPA/PFZ overlays, alert + trace viewer.
 let lat = 15.0, lon = 74.0;
-let sid = localStorage.getItem("orca_sid") || (localStorage.setItem("orca_sid", crypto.randomUUID()), localStorage.getItem("orca_sid"));
+let sid = localStorage.getItem("galene_sid") || (localStorage.setItem("galene_sid", crypto.randomUUID()), localStorage.getItem("galene_sid"));
 
 const map = L.map("map").setView([lat, lon], 5);
 L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
