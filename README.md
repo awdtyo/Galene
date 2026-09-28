@@ -65,6 +65,26 @@ Query: "Is it safe tomorrow morning?"
 }
 ```
 
+### Pipeline Flowchart
+
+```mermaid
+flowchart TD
+    A[User: query + lat/lon<br/>Leaflet chat UI] --> B[POST /ask<br/>session_id, dest?]
+    B --> C[Planner<br/>classify safety/pfz/zone/route<br/>discovery.choose + memory.recall]
+    C -->|safety| D1[Weather agent<br/>48h forecast window<br/>alerts + tides]
+    C -->|pfz| D2[Ocean agent<br/>SST + chlorophyll + PFZ<br/>favourability note]
+    C -->|zone/route| D3[Geo agent<br/>EEZ/MPA geofence<br/>+ nearest MPA + route]
+    D1 --> E[Risk agent<br/>DETERMINISTIC rules<br/>safe/caution/unsafe]
+    D2 --> F[Viz/Report<br/>format_response only exit<br/>RAG citations + glossary]
+    D3 --> F
+    E --> F
+    F --> G[LLM phrase<br/>Groq live / mock fallback<br/>Verdict→Numbers→Geofence→Actions→Sources]
+    G --> H[Response<br/>answer + verdict + reasons<br/>+ trace + citations + degraded]
+    H --> A
+    C -->|empty/degraded| R[Replan once<br/>retry + degraded flag]
+    R --> D1
+```
+
 ---
 
 ## Product Constraints
@@ -151,25 +171,7 @@ RAG grounds **wording only** — never the verdict.
 
 ---
 
-## How It Works — Pipeline Flowchart
-
-```mermaid
-flowchart TD
-    A[User: query + lat/lon<br/>Leaflet chat UI] --> B[POST /ask<br/>session_id, dest?]
-    B --> C[Planner<br/>classify safety/pfz/zone/route<br/>discovery.choose + memory.recall]
-    C -->|safety| D1[Weather agent<br/>48h forecast window<br/>alerts + tides]
-    C -->|pfz| D2[Ocean agent<br/>SST + chlorophyll + PFZ<br/>favourability note]
-    C -->|zone/route| D3[Geo agent<br/>EEZ/MPA geofence<br/>+ nearest MPA + route]
-    D1 --> E[Risk agent<br/>DETERMINISTIC rules<br/>safe/caution/unsafe]
-    D2 --> F[Viz/Report<br/>format_response only exit<br/>RAG citations + glossary]
-    D3 --> F
-    E --> F
-    F --> G[LLM phrase<br/>Groq live / mock fallback<br/>Verdict→Numbers→Geofence→Actions→Sources]
-    G --> H[Response<br/>answer + verdict + reasons<br/>+ trace + citations + degraded]
-    H --> A
-    C -->|empty/degraded| R[Replan once<br/>retry + degraded flag]
-    R --> D1
-```
+## How It Works
 
 Intent routing (`planner.py`): keyword router first (deterministic, offline) —
 `zone` outranks `pfz` so “restricted fishing zone” routes correctly; LLM confirms
