@@ -1,6 +1,20 @@
 // Galene UI: chat -> POST /ask, EEZ/MPA/PFZ overlays, alert + trace viewer.
+function newSid() {
+  if (window.crypto && typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  return "sid-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
+}
+let sid = null;
+try {
+  sid = localStorage.getItem("galene_sid");
+  if (!sid) { sid = newSid(); localStorage.setItem("galene_sid", sid); }
+} catch { sid = newSid(); }
+
 let lat = 15.0, lon = 74.0;
-let sid = localStorage.getItem("galene_sid") || (localStorage.setItem("galene_sid", crypto.randomUUID()), localStorage.getItem("galene_sid"));
+
+if (typeof L === "undefined") {
+  document.getElementById("alert").textContent = "⚠️ Map library (Leaflet CDN) failed to load — chat still works.";
+}
+if (typeof L !== "undefined") {
 
 const map = L.map("map", { zoomControl: true }).setView([lat, lon], 5);
 L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
@@ -229,6 +243,7 @@ map.on("click", (e) => {
   document.getElementById("loc").textContent = `lat ${lat.toFixed(2)}, lon ${lon.toFixed(2)} (click map to move)`;
   loadChart();
 });
+} // end Leaflet guard — chat below works with or without the map
 
 const chat = document.getElementById("chat");
 // Escape HTML, then highlight key data: measures, percentages, coordinates, warnings.

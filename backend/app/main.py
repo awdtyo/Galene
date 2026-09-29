@@ -54,6 +54,9 @@ def ask(body: AskRequest):
 
 
 # Serve the dependency-free Leaflet UI from the same origin (added for demo run).
+from pathlib import Path  # noqa: E402
+
 from fastapi.staticfiles import StaticFiles  # noqa: E402
 
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+_FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+app.mount("/", StaticFiles(directory=str(_FRONTEND_DIR), html=True), name="frontend")
