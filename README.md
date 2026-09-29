@@ -1,7 +1,7 @@
 # Galene
 <img src="assets/banner.png" alt="SatQuery AI" width="1000" />
 
-### Marine Ecosystem Reasoning with Collaborative Agents
+### Marine EcOsystem Reasoning with Collaborative Agents
 
 [![SIH-2026](https://img.shields.io/badge/SIH-2026-blue?style=flat-square)](https://www.sih.gov.in/)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-green?style=flat-square)](https://www.python.org/)
@@ -98,8 +98,6 @@ flowchart TD
 - Side-by-side site comparison (“Compare Kochi vs Chennai tomorrow?”)
 - Multi-turn memory — follow-ups remember the conversation
 - Every answer carries its reasoning trace, data citations, and sources
-
-
 
 **See it on the map**
 - Satellite ocean basemap with city, boundary, port, and sea-name overlays
