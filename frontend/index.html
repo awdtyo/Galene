@@ -3,238 +3,42 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Galene — Marine Intelligence. Multi-agent marine safety and productivity analysis for the Indian coast." />
-  <meta name="theme-color" content="#0a6c9e" />
   <title>Galene — Marine Intelligence</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230a6c9e'/%3E%3Cpath d='M4 19c3.2 0 3.2-4 6.4-4s3.2 4 6.4 4 3.2-4 6.4-4 3.2 4 4.8 4' stroke='%2372d7de' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3Cpath d='M4 25c3.2 0 3.2-4 6.4-4s3.2 4 6.4 4 3.2-4 6.4-4 3.2 4 4.8 4' stroke='%23ffffff' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<a class="skip-link" href="#ask-input">Skip to the question box</a>
-<div class="ocean-bg" aria-hidden="true">
-  <div class="ocean-rays"></div>
-  <canvas id="ocean-particles"></canvas>
-</div>
-
-<header class="app-header">
-  <div class="brand">
-    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-      <rect width="32" height="32" rx="9" fill="currentColor" />
-      <path d="M4 18.5c3.2 0 3.2-4 6.4-4s3.2 4 6.4 4 3.2-4 6.4-4 3.2 4 4.8 4" stroke="#8ce3e9" stroke-width="2.3" fill="none" stroke-linecap="round" />
-      <path d="M4 25c3.2 0 3.2-4 6.4-4s3.2 4 6.4 4 3.2-4 6.4-4 3.2 4 4.8 4" stroke="#ffffff" stroke-width="2.3" fill="none" stroke-linecap="round" />
-    </svg>
-    <div class="brand-text">
-      <span class="brand-name">Galene</span>
-      <span class="brand-sub">Marine Intelligence</span>
-    </div>
-  </div>
-
-  <div class="header-tools">
-    <div id="health" class="status status--pending" role="status" aria-live="polite">
-      <span class="status-dot" aria-hidden="true"></span>
-      <span class="status-label">Checking systems…</span>
-    </div>
-
-    <button type="button" id="about-btn" class="icon-btn" aria-label="About Galene" aria-haspopup="dialog">i</button>
-  </div>
-</header>
-
-<dialog id="about-dialog" class="dialog" aria-labelledby="about-title">
-  <h2 id="about-title">About Galene</h2>
-  <p>Galene is a multi-agent marine intelligence assistant for the Indian coast. A deterministic risk engine reads live and fallback marine data, geospatial boundaries and IMD warnings, then a reporting agent writes the advisory.</p>
-  <p class="dialog-muted">Every number, verdict, boundary, warning and citation on this page comes from the Galene backend. Where the API returns nothing, the interface says <em>Data unavailable</em> — nothing is estimated in the browser. Boundaries are simplified and are <strong>not for navigation</strong>.</p>
-  <form method="dialog"><button class="btn btn--ghost btn--sm">Close</button></form>
-</dialog>
-
-<main class="stage">
-
-  <!-- ── Query ─────────────────────────────────────────────── -->
-  <section class="panel panel--ask" aria-labelledby="ask-h">
-    <div class="hero">
-      <h1 id="ask-h">Ask Galene</h1>
-      <p>Explore marine conditions through natural language.</p>
-    </div>
-
-    <form id="ask-form" class="ask-form" autocomplete="off">
-      <div class="ask-field">
-        <label class="sr-only" for="ask-input">Your question</label>
-        <textarea id="ask-input" rows="2" placeholder="Is it safe to fish tomorrow at 6 AM?" spellcheck="true"></textarea>
+  <header>
+    <span class="logo">🌊</span>
+    <h1>Galene <span class="tag">· Marine Intelligence for fishers, researchers & coastal authorities</span></h1>
+    <div id="alert">⚓ No query yet.</div>
+  </header>
+  <main>
+    <section id="mapwrap">
+      <div id="map"></div>
+      <div id="layers">
+        <label><input type="checkbox" id="lyr-eez" checked /> EEZ</label>
+        <label><input type="checkbox" id="lyr-mpa" checked /> MPAs</label>
+        <label><input type="checkbox" id="lyr-pfz" checked /> PFZ</label>
+        <label><input type="checkbox" id="lyr-sat" /> Satellite</label>
+        <label><input type="checkbox" id="lyr-labels" checked /> Labels</label>
+        <label><input type="checkbox" id="lyr-ports" checked /> Ports</label>
+        <label><input type="checkbox" id="lyr-seas" checked /> Seas</label>
+        <span id="loc">lat 15.00, lon 74.00 (click map to move)</span>
       </div>
-      <button type="submit" id="ask-submit" class="btn btn--primary">Ask Galene</button>
-    </form>
-
-    <div class="chips" role="group" aria-label="Example questions">
-      <button type="button" class="chip" data-q="Find potential fishing zones near me">Find nearby PFZ</button>
-      <button type="button" class="chip" data-q="What are the sea conditions tomorrow?">Check sea conditions</button>
-      <button type="button" class="chip" data-q="Show areas to avoid today">Show hazardous areas</button>
-      <button type="button" class="chip" data-q="Is it safe to fish tomorrow at 6 AM?">Analyze tomorrow morning</button>
-    </div>
-
-    <p class="ask-meta">
-      <span class="ask-meta-label">Query point</span>
-      <span id="loc-inline" class="ask-meta-value">15.00° N, 74.00° E</span>
-      <button type="button" id="geo-btn" class="link-btn">Use my location</button>
-      <span class="ask-meta-hint">— click the map to move it</span>
-    </p>
-
-    <div id="analyzing" class="analyzing" role="status" aria-live="polite" hidden>
-      <p class="analyzing-title">Galene is exploring the ocean</p>
-      <ol id="analyzing-stages" class="analyzing-stages"></ol>
-    </div>
-  </section>
-
-  <!-- ── Notices ───────────────────────────────────────────── -->
-  <div class="notice-slot">
-    <p id="demo-banner" class="notice notice--demo" hidden><span class="notice-tag">DEMO</span> Showing a local copy of a captured backend response for UI testing. Nothing here is live.</p>
-    <p id="notice-degraded" class="notice notice--warn" role="status" hidden>
-      <span class="notice-tag">Fallback data</span>
-      <span id="notice-degraded-text">Some live marine data is temporarily unavailable. Galene is using verified fallback data.</span>
-    </p>
-    <p id="notice-error" class="notice notice--error" role="alert" hidden>
-      <span class="notice-tag">Connection problem</span>
-      <span id="notice-error-text">Galene could not reach the backend. Nothing was fabricated — please retry.</span>
-      <button type="button" id="notice-retry" class="link-btn">Retry</button>
-    </p>
-  </div>
-
-  <!-- ── Decision ──────────────────────────────────────────── -->
-  <section class="panel panel--decision" aria-labelledby="decision-h" id="decision-panel" data-state="idle">
-    <div class="panel-head">
-      <h2 class="panel-title" id="decision-h">Marine Decision</h2>
-      <span id="decision-when" class="panel-note"></span>
-    </div>
-
-    <div id="decision-verdict" class="verdict">
-      <span class="verdict-glyph" aria-hidden="true"></span>
-      <span class="verdict-word">Awaiting question</span>
-      <span class="verdict-sub">Ask a question to get a risk verdict</span>
-    </div>
-
-    <dl class="decision-facts">
-      <div class="fact">
-        <dt>Target window</dt>
-        <dd id="fact-window" class="is-empty">Data unavailable</dd>
-      </div>
-      <div class="fact">
-        <dt>Risk score</dt>
-        <dd id="fact-score" class="is-empty">Data unavailable</dd>
-      </div>
-      <div class="fact">
-        <dt>Query point</dt>
-        <dd id="fact-point">15.00° N, 74.00° E</dd>
-      </div>
-      <div class="fact">
-        <dt>Data status</dt>
-        <dd id="fact-degraded">Live</dd>
-      </div>
-    </dl>
-
-    <div class="why">
-      <h3 class="sub">Why?</h3>
-      <ul id="decision-reasons" class="reasons"></ul>
-    </div>
-    <p class="fineprint">The risk engine is deterministic and server-side. This panel displays its verdict verbatim — the browser never computes or adjusts a score.</p>
-  </section>
-
-  <!-- ── Map ───────────────────────────────────────────────── -->
-  <section class="panel panel--map" aria-labelledby="map-h">
-    <div class="panel-head">
-      <h2 class="panel-title" id="map-h">Marine Map</h2>
-      <div class="map-head-tools">
-        <button type="button" id="locate-btn" class="btn btn--ghost btn--sm">Centre on query point</button>
-      </div>
-    </div>
-
-    <div id="mapwrap">
-      <div id="map" role="application" aria-label="Marine map of the Indian Ocean"></div>
-
-      <div id="layers" class="layer-panel" role="group" aria-label="Map layers">
-        <button type="button" id="layers-toggle" class="layer-panel-toggle" aria-expanded="true" aria-controls="layer-body">
-          <span>Layers</span><span class="chev" aria-hidden="true"></span>
-        </button>
-        <div id="layer-body" class="layer-body">
-          <label class="switch"><input type="checkbox" id="lyr-eez" checked /><span>EEZ</span></label>
-          <label class="switch"><input type="checkbox" id="lyr-mpa" checked /><span>MPAs</span></label>
-          <label class="switch"><input type="checkbox" id="lyr-pfz" checked /><span>PFZ</span></label>
-          <label class="switch"><input type="checkbox" id="lyr-sst" checked /><span>SST</span></label>
-          <label class="switch"><input type="checkbox" id="lyr-alerts" checked /><span>Cyclone alerts</span></label>
-          <label class="switch"><input type="checkbox" id="lyr-chl" /><span>Chlorophyll</span></label>
-          <label class="switch"><input type="checkbox" id="lyr-sat" /><span>Satellite</span></label>
-          <hr class="layer-sep" />
-          <label class="switch"><input type="checkbox" id="lyr-labels" checked /><span>Labels</span></label>
-          <label class="switch"><input type="checkbox" id="lyr-ports" checked /><span>Ports</span></label>
-          <label class="switch"><input type="checkbox" id="lyr-seas" checked /><span>Seas</span></label>
-        </div>
-      </div>
-
-      <details id="legend" class="legend" open>
-        <summary class="legend-title">Legend</summary>
-        <ul>
-          <li><i class="sw sw-eez"></i>EEZ boundary</li>
-          <li><i class="sw sw-mpa"></i>Marine protected area</li>
-          <li><i class="sw sw-pfz"></i>Potential fishing zone</li>
-          <li><i class="sw sw-pt"></i>Query point</li>
-          <li><i class="sw sw-sst"></i>SST grid (cool → warm)</li>
-          <li><i class="sw sw-sev"></i>Cyclone alert severity</li>
-          <li><i class="sw sw-chl"></i>Chlorophyll proxy</li>
-        </ul>
-      </details>
-      <p id="loc" class="map-loc">lat 15.00, lon 74.00 (click map to move)</p>
-    </div>
-
-    <div id="chartwrap">
-      <canvas id="chart" height="132" role="img" aria-label="48 hour tide, wave and wind series"></canvas>
-      <div id="charttip"></div>
-      <p id="chartcap" class="chart-cap">48h tide / wave / wind — hover for values</p>
-    </div>
-  </section>
-
-  <!-- ── Evidence ──────────────────────────────────────────── -->
-  <section class="panel panel--evidence" aria-labelledby="evidence-h">
-    <div class="panel-head">
-      <h2 class="panel-title" id="evidence-h">Evidence</h2>
-      <span class="panel-note" id="evidence-note">Values reported by the backend risk &amp; agent pipeline</span>
-    </div>
-    <div id="evidence-list" class="evidence-list"></div>
-    <div class="evidence-foot">
-      <h3 class="sub">Sources</h3>
-      <div id="sources-list" class="src-list"></div>
-    </div>
-  </section>
-
-  <!-- ── Trace ─────────────────────────────────────────────── -->
-  <section class="panel panel--trace" aria-labelledby="trace-h">
-    <button type="button" id="trace-toggle" class="trace-toggle" aria-expanded="false" aria-controls="trace-body">
-      <span class="trace-head">
-        <span class="chev" aria-hidden="true"></span>
-        <span class="panel-title" id="trace-h">Agent Execution Trace</span>
-      </span>
-      <span id="trace-summary" class="trace-summary">No run yet</span>
-    </button>
-    <div id="trace-body" class="trace-body" hidden></div>
-  </section>
-
-</main>
-
-<!-- ── Conversation ────────────────────────────────────────── -->
-<section class="panel panel--history" aria-labelledby="history-h">
-  <div class="panel-head">
-    <h2 class="panel-title" id="history-h">Conversation</h2>
-    <span class="panel-note">Multi-turn context is kept by the backend for session <code id="session-label">—</code></span>
-    <button type="button" id="new-session" class="btn btn--ghost btn--sm">New session</button>
-  </div>
-  <div id="chat" class="chat" aria-live="polite" aria-relevant="additions"></div>
-</section>
-
-<footer class="app-footer">
-  <span>Galene · SIH 2026</span>
-  <span aria-hidden="true">·</span>
-  <span>EEZ / WDPA boundaries are simplified — not for navigation</span>
-</footer>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="dev-fixtures.js"></script>
-<script src="app.js"></script>
+      <div id="chartwrap"><canvas id="chart" height="120"></canvas><div id="charttip"></div><div id="chartcap">48h tide / wave / wind — hover for values</div></div>
+    </section>
+    <section id="chatwrap">
+      <div id="chat"></div>
+      <form id="form">
+        <input id="q" autocomplete="off" placeholder="Is it safe tomorrow morning? Try: Compare Kochi vs Chennai…" />
+        <button>Ask 🌊</button>
+      </form>
+      <details id="tracebox"><summary>🔍 Evidence &amp; trace</summary><div id="trace"></div></details>
+    </section>
+  </main>
+  <footer>Galene · SIH 2026 · EEZ/WDPA boundaries simplified — not for navigation</footer>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

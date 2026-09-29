@@ -60,34 +60,3 @@ def fetch_marine(lat: float, lon: float, *, use_cache: bool = True) -> dict:
         return {"data": data, "provenance": provenance("open-meteo/marine", "live")}
     except Exception:
         return {"data": read_fixture("openmeteo_marine"), "provenance": provenance("open-meteo/marine", "fixture")}
-
-
-def fetch_sst_grid(minlon: float, minlat: float, maxlon: float, maxlat: float, n: int = 5) -> dict:
-    """Current-hour SST over an n x n grid (single multi-location call)."""
-    n = max(2, min(n, 7))
-    lats = [minlat + (maxlat - minlat) * i / (n - 1) for i in range(n)]
-    lons = [minlon + (maxlon - minlon) * j / (n - 1) for j in range(n)]
-    pts = [(la, lo) for la in lats for lo in lons]
-    try:
-        r = httpx.get(
-            MARINE_URL,
-            params={
-                "latitude": ",".join(f"{la:.2f}" for la, _ in pts),
-                "longitude": ",".join(f"{lo:.2f}" for _, lo in pts),
-                "hourly": "sea_surface_temperature",
-                "forecast_days": 1,
-                "current": "sea_surface_temperature",
-            },
-            timeout=30,
-        )
-        r.raise_for_status()
-        body = r.json()
-        cells = []
-        for (la, lo), item in zip(pts, body if isinstance(body, list) else []):
-            cur = (item.get("current") or {}).get("sea_surface_temperature")
-            cells.append({"lat": round(la, 2), "lon": round(lo, 2), "sst": cur})
-        return {"data": {"cells": cells}, "provenance": provenance("open-meteo/marine-grid", "live")}
-    except Exception:
-        fx = read_fixture("openmeteo_marine")["hourly"]["sea_surface_temperature"][0]
-        cells = [{"lat": round(la, 2), "lon": round(lo, 2), "sst": fx} for la, lo in pts]
-        return {"data": {"cells": cells}, "provenance": provenance("open-meteo/marine-grid", "fixture")}
