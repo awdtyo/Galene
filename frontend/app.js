@@ -64,6 +64,49 @@ const RE_SNAPSHOT = /Live snapshot\s+(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})\s*[-–
 
 const NA = 'Data unavailable';
 
+/* ── Stylesheet guard ───────────────────────────────────────────────────
+   Some hosts serve static assets through a Python MIME database that has no
+   .css entry. Starlette then falls back to application/octet-stream
+   (starlette/responses.py), and browsers silently REFUSE to apply a
+   stylesheet that is not text/css — the page renders unstyled while the
+   markup and map still work. The <link> stays the fast path; this only
+   re-injects the very same file if the browser refused it. */
+(function stylesheetGuard() {
+  const link = document.querySelector('link[rel="stylesheet"][href$="style.css"]');
+  if (!link) return;
+  let done = false;
+
+  const applied = () => {
+    try {
+      // Same-origin, so cssRules is readable. A refused sheet is null or empty.
+      return !!link.sheet && link.sheet.cssRules.length > 0;
+    } catch (_) {
+      return true; // cross-origin: cannot introspect, assume fine
+    }
+  };
+
+  const inject = () => {
+    if (done || applied()) return;
+    done = true;
+    const href = link.getAttribute('href');
+    fetch(href, { credentials: 'same-origin' })
+      .then((r) => (r.ok ? r.text() : Promise.reject(new Error('HTTP ' + r.status))))
+      .then((css) => {
+        const style = document.createElement('style');
+        style.setAttribute('data-fallback-for', href);
+        style.textContent = css;
+        document.head.appendChild(style);
+        // Anything sized from CSS (the particle canvas among it) measured
+        // against the unstyled layout and must re-measure now.
+        window.dispatchEvent(new Event('resize'));
+      })
+      .catch(() => { /* leave the page exactly as-is; never block rendering */ });
+  };
+
+  if (document.readyState === 'complete') inject();
+  else window.addEventListener('load', inject);
+})();
+
 /* ── DOM helpers ────────────────────────────────────────────────────── */
 
 const $ = (id) => document.getElementById(id);
