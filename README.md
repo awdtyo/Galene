@@ -1,5 +1,6 @@
 # Galene - Marine Ecosystem Reasoning with Collaborative Agents
 <img src="assets/banner.png" alt="SatQuery AI" width="1000" />
+
 [![SIH-2026](https://img.shields.io/badge/SIH-2026-blue?style=flat-square)](https://www.sih.gov.in/)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-green?style=flat-square)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=flat-square)](https://fastapi.tiangolo.com/)
