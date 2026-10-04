@@ -1,11 +1,13 @@
 """Open-Meteo forecast + marine fetchers. VERIFIED live (no key, JSON).
 
-Endpoints (probed 2026-09-28, HTTP 200):
+Endpoints (probed 2026-09-28, HTTP 200; cloud_cover+visibility re-verified
+2026-10-04, HTTP 200, hourly keys include cloud_cover, visibility):
 - https://api.open-meteo.com/v1/forecast
 - https://marine-api.open-meteo.com/v1/marine
 Docs: https://open-meteo.com/en/docs (marine + weather). Licence: free for
 non-commercial use, attribution required (see docs/data_sources.md).
 Fallback: file cache -> data/fixtures/openmeteo_*.json (offline demo).
+Note: checked-in fixture predates cloud fields; code treats them as optional.
 """
 
 import httpx
@@ -17,8 +19,8 @@ MARINE_URL = "https://marine-api.open-meteo.com/v1/marine"
 
 
 def fetch_forecast(lat: float, lon: float, *, use_cache: bool = True) -> dict:
-    """Hourly weather forecast: wind, temperature, weather_code."""
-    key = f"openmeteo_forecast_{lat:.2f}_{lon:.2f}"
+    """Hourly weather forecast: wind, temperature, weather_code, cloud, visibility."""
+    key = f"openmeteo_forecast_v2_{lat:.2f}_{lon:.2f}"  # v2: cloud_cover+visibility added 2026-10-04
     if use_cache:
         hit = read_cache(key)
         if hit is not None:
@@ -26,7 +28,7 @@ def fetch_forecast(lat: float, lon: float, *, use_cache: bool = True) -> dict:
     params = {
         "latitude": lat,
         "longitude": lon,
-        "hourly": "temperature_2m,wind_speed_10m,weather_code",
+        "hourly": "temperature_2m,wind_speed_10m,weather_code,cloud_cover,visibility",
         "forecast_days": 2,
     }
     try:

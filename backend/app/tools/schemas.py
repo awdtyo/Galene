@@ -50,6 +50,8 @@ class ForecastHour(BaseModel):
     wind_kmh: float | None = None
     weather_code: int | None = None
     wave_height_m: float | None = None
+    cloud_cover_pct: float | None = None
+    visibility_m: float | None = None
 
 
 class ForecastOut(BaseModel):

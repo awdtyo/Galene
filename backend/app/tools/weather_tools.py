@@ -18,6 +18,8 @@ def get_forecast(point: LatLon, *, hours: int = 12) -> ForecastOut:
             wind_kmh=(fh.get("wind_speed_10m") or [None])[i],
             weather_code=(fh.get("weather_code") or [None])[i],
             wave_height_m=(mh.get("wave_height") or [None])[i] if mh.get("wave_height") else None,
+            cloud_cover_pct=(fh.get("cloud_cover") or [None])[i] if fh.get("cloud_cover") else None,
+            visibility_m=(fh.get("visibility") or [None])[i] if fh.get("visibility") else None,
         )
         for i in range(n)
     ]

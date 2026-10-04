@@ -45,6 +45,7 @@ _SAFETY_FOCUS = {
     "alerts": ("cyclone", "alert", "warning", "storm", "depression", "lightning"),
     "wind": ("wind", "breeze", "gust"),
     "wave": ("wave", "swell", "surf"),
+    "sky": ("moon", "visible", "clear sky", "sky clear", "clear", "cloudy", "cloud", "night sky", "stargaz", "sky"),
 }
 
 
@@ -136,6 +137,31 @@ def answer(
             )
     else:
         focus = safety_focus(query)
+        if focus == "sky":
+            sky = weather.summarize_sky(point, trace)
+            if not sky.get("window"):
+                sky, degraded = _replan("sky", trace, lambda: weather.summarize_sky(point, trace))
+            decision = {"verdict": "info", "reasons": report.sky_reasons(sky)}
+            fence = geo.assess(point, None, trace)
+            geo_note = (
+                f" Geofence: inside {fence['mpa_name']} — AVOID entry." if fence["inside_mpa"]
+                else (" Geofence: inside Indian EEZ, clear of protected areas." if fence["inside_eez"]
+                      else " Geofence: OUTSIDE Indian EEZ — check jurisdiction.")
+            )
+            facts = report.sky_facts(sky, point) + geo_note
+            text, citations = report.format_response(query, facts, trace, history, focus="sky")
+            if session_id:
+                remember(session_id, "user", query)
+                remember(session_id, "assistant", text)
+            return AskResponse(
+                answer=text,
+                verdict="info",
+                reasons=decision["reasons"],
+                trace=[TraceStep(**t) for t in trace],
+                session_id=session_id,
+                citations=citations,
+                degraded=degraded,
+            )
         summary = weather.summarize(point, trace, focus=focus)
         if not summary.get("window"):
             summary, degraded = _replan("weather", trace, lambda: weather.summarize(point, trace, focus=focus))
