@@ -40,6 +40,23 @@ def classify(query: str) -> str:
     return out["text"].strip().lower() if out["text"].strip().lower() in _KEYWORDS else "safety"
 
 
+_SAFETY_FOCUS = {
+    "tide": ("tide", "high tide", "low tide"),
+    "alerts": ("cyclone", "alert", "warning", "storm", "depression", "lightning"),
+    "wind": ("wind", "breeze", "gust"),
+    "wave": ("wave", "swell", "surf"),
+}
+
+
+def safety_focus(query: str) -> str:
+    """Query-specific sub-focus inside safety intent. Deterministic keywords."""
+    q = query.lower()
+    for focus, words in _SAFETY_FOCUS.items():
+        if any(w in q for w in words):
+            return focus
+    return "general"
+
+
 def _replan(label: str, trace: list, retry) -> tuple:
     """Run retry() once after recording the replan step. Returns (result, degraded)."""
     trace.append({"agent": "planner", "tool": f"replan:{label}", "timestamp": now_iso()})
@@ -64,6 +81,7 @@ def answer(
     plan = discovery.choose(intent)
     trace.append({"agent": "planner", "tool": "discovery:" + ",".join(plan["datasets"]), "timestamp": now_iso()})
     decision: dict | None = None
+    focus = "general"
 
     if intent == "compare":
         named = [n for n in SITES if n in query.lower()]
@@ -117,9 +135,10 @@ def answer(
                 f"Departure window verdict: {dep_verdict}."
             )
     else:
-        summary = weather.summarize(point, trace)
+        focus = safety_focus(query)
+        summary = weather.summarize(point, trace, focus=focus)
         if not summary.get("window"):
-            summary, degraded = _replan("weather", trace, lambda: weather.summarize(point, trace))
+            summary, degraded = _replan("weather", trace, lambda: weather.summarize(point, trace, focus=focus))
         decision = risk.verdict(summary, trace)
         fence = geo.assess(point, None, trace)
         geo_note = (
@@ -127,9 +146,9 @@ def answer(
             else (" Geofence: inside Indian EEZ, clear of protected areas." if fence["inside_eez"]
                   else " Geofence: OUTSIDE Indian EEZ — check jurisdiction.")
         )
-        facts = report.safety_facts(summary, decision) + geo_note
+        facts = report.safety_facts_focused(summary, decision, focus) + geo_note
 
-    text, citations = report.format_response(query, facts, trace, history)
+    text, citations = report.format_response(query, facts, trace, history, focus=focus)
     if session_id:
         remember(session_id, "user", query)
         remember(session_id, "assistant", text)

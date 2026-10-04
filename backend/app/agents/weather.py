@@ -6,7 +6,7 @@ from backend.app.api.schemas import now_iso
 from backend.app.tools import LatLon, get_alerts, get_forecast, get_tides
 
 
-def summarize(point: LatLon, trace: list) -> dict:
+def summarize(point: LatLon, trace: list, focus: str = "general") -> dict:
     fc = get_forecast(point, hours=48)
     trace.append({"agent": "weather", "tool": "get_forecast", "timestamp": now_iso()})
     al = get_alerts(point)
@@ -22,9 +22,12 @@ def summarize(point: LatLon, trace: list) -> dict:
     waves = [h.wave_height_m for h in window if h.wave_height_m is not None]
     return {
         "window": f"{tomorrow} 04:00-11:00",
+        "focus": focus,
         "max_wind_kmh": max(winds) if winds else None,
         "max_wave_m": max(waves) if waves else None,
         "warnings": al.warnings,
         "high_tide": td.high_tide,
+        "low_tide": td.low_tide,
+        "tide_height_m": td.height_m,
         "provenance": [fc.provenance, al.provenance],
     }
